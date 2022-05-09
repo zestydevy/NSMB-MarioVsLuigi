@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using Photon.Pun;
 using Photon.Realtime;
+using ExitGames.Client.Photon;
 
 public class GlobalController : Singleton<GlobalController> {
 
@@ -33,6 +34,7 @@ public class GlobalController : Singleton<GlobalController> {
         settings = GetComponent<Settings>();
         discordController = GetComponent<DiscordController>();
 
+        PhotonPeer.RegisterType(typeof(PlayerInput), (byte) 'i', PlayerInputs.Serialize, PlayerInputs.Deserialize);
     }
 
     void Start() {

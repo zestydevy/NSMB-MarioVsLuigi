@@ -208,4 +208,8 @@ public class Utils {
             tileCache[tilename] :
             tileCache[tilename] = Resources.Load(tilename) as TileBase;
     }
+
+    public static void TickTimer(ref float timer, float delta, float min = 0, float max = 0) {
+        timer = Mathf.Min(Mathf.Max(min, timer - delta), max);
+    }
 }

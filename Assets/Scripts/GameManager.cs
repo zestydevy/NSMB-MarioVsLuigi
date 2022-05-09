@@ -547,7 +547,7 @@ public class GameManager : MonoBehaviour, IOnEventCallback, IInRoomCallbacks, IC
         foreach (var player in allPlayers) {
             if (player == null) 
                 return;
-            if (player.state == Enums.PowerupState.MegaMushroom && player.giantTimer != 15)
+            if (player.State == Enums.PowerupState.MegaMushroom && player.giantTimer != 15)
                 mega = true;
             if (player.invincible > 0)
                 invincible = true;

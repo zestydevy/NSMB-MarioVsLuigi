@@ -113,7 +113,7 @@ public class FrozenCube : HoldableEntity {
         }
         if (holder || player.frozen)
             return;
-        else if (player.groundpound && player.state != Enums.PowerupState.MiniMushroom && attackedFromAbove) {
+        else if (player.groundpound && player.State != Enums.PowerupState.MiniMushroom && attackedFromAbove) {
             if (!plantEntity)
                 photonView.RPC("SpecialKill", RpcTarget.All, player.body.velocity.x > 0, player.groundpound);
             else
@@ -122,7 +122,7 @@ public class FrozenCube : HoldableEntity {
             player.photonView.RPC("Knockback", RpcTarget.All, body.position.x > player.body.position.x, 1, false, photonView.ViewID);
         }
         if (!holder && !dead && !plantEntity) {
-            if (player.CanPickup() && player.state != Enums.PowerupState.MiniMushroom && !player.holding && player.running && !player.propeller && !player.flying && !player.crouching && !player.dead && !player.wallSlideLeft && !player.wallSlideRight && !player.doublejump && !player.triplejump) {
+            if (player.CanPickup() && player.State != Enums.PowerupState.MiniMushroom && !player.holding && player.running && !player.propeller && !player.flying && !player.crouching && !player.dead && !player.wallSlideLeft && !player.wallSlideRight && !player.doublejump && !player.triplejump) {
                 fallen = true;
                 photonView.RPC("Pickup", RpcTarget.All, player.photonView.ViewID);
                 player.photonView.RPC("SetHolding", RpcTarget.All, photonView.ViewID);

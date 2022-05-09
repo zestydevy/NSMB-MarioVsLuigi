@@ -116,14 +116,14 @@ public class KoopaWalk : HoldableEntity {
         if (holder) 
             return;
 
-        if (!attackedFromAbove && player.state == Enums.PowerupState.BlueShell && player.crouching && !player.inShell) {
+        if (!attackedFromAbove && player.State == Enums.PowerupState.BlueShell && player.crouching && !player.inShell) {
             photonView.RPC("SetLeft", RpcTarget.All, damageDirection.x > 0);
-        } else if (player.sliding || player.inShell || player.invincible > 0 || player.state == Enums.PowerupState.MegaMushroom || player.drill) {
+        } else if (player.sliding || player.inShell || player.invincible > 0 || player.State == Enums.PowerupState.MegaMushroom || player.drill) {
             bool originalFacing = player.facingRight;
             if (shell && !stationary && player.inShell && Mathf.Sign(body.velocity.x) != Mathf.Sign(player.body.velocity.x))
                 player.photonView.RPC("Knockback", RpcTarget.All, player.body.position.x < body.position.x, 0, photonView.ViewID);
             photonView.RPC("SpecialKill", RpcTarget.All, !originalFacing, false);
-        } else if (player.groundpound && player.state != Enums.PowerupState.MiniMushroom && attackedFromAbove) {
+        } else if (player.groundpound && player.State != Enums.PowerupState.MiniMushroom && attackedFromAbove) {
             photonView.RPC("EnterShell", RpcTarget.All);
             if (!blue) {
                 photonView.RPC("Kick", RpcTarget.All, player.body.position.x < body.position.x, 1f, player.groundpound);
@@ -131,9 +131,9 @@ public class KoopaWalk : HoldableEntity {
                 previousHolder = player;
             }
         } else if (attackedFromAbove && (!shell || !IsStationary())) {
-            if (player.state != Enums.PowerupState.MiniMushroom || player.groundpound) {
+            if (player.State != Enums.PowerupState.MiniMushroom || player.groundpound) {
                 photonView.RPC("EnterShell", RpcTarget.All);
-                if (player.state == Enums.PowerupState.MiniMushroom)
+                if (player.State == Enums.PowerupState.MiniMushroom)
                     player.groundpound = false;
             }
             player.photonView.RPC("PlaySound", RpcTarget.All, Enums.Sounds.Enemy_Generic_Stomp);

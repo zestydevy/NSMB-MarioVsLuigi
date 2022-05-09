@@ -10194,7 +10194,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerId: -1
   dead: 0
-  state: 0
   previousState: 0
   slowriseGravity: 1.15
   normalGravity: 3.25
@@ -10225,6 +10224,7 @@ MonoBehaviour:
   hitboxes: []
   cameraController: {fileID: 0}
   fadeOut: {fileID: 0}
+  animator: {fileID: 0}
   body: {fileID: 0}
   onGround: 0
   crushGround: 0
@@ -10278,6 +10278,8 @@ MonoBehaviour:
   floorAngle: 0
   knockbackTimer: 0
   unfreezeTimer: 0
+  wallSlideTimer: 0
+  wallJumpTimer: 0
   wallSlideLeft: 0
   wallSlideRight: 0
   pipeDirection: {x: 0, y: 0}
