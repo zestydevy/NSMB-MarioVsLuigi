@@ -25,6 +25,7 @@ public class PlayerController : FreezableEntity, IPlayerInteractable {
     [Networked] public Enums.PowerupState State { get; set; }
     [Networked] public Enums.PowerupState PreviousState { get; set; }
     [Networked] public Enums.PowerupState StoredPowerup { get; set; }
+    [Networked] public Enums.PowerupState DisplayState { get; set; }
     [Networked] public byte Stars { get; set; }
     [Networked] public byte Coins { get; set; }
     [Networked] public sbyte Lives { get; set; }
@@ -100,6 +101,9 @@ public class PlayerController : FreezableEntity, IPlayerInteractable {
     [Networked] public TickTimer GiantEndTimer { get; set; }
     [Networked] public NetworkBool IsInShell { get; set; }
     [Networked] public FrozenCube FrozenCube { get; set; }
+
+    private List<PowerUpQueue> PowerUpQueueList = new List<PowerUpQueue>();
+    public bool IsPowerUpQueueActive = false;
 
     //---Properties
     public override bool IsFlying => IsSpinnerFlying || IsPropellerFlying; //doesn't work consistently?
@@ -553,6 +557,13 @@ public class PlayerController : FreezableEntity, IPlayerInteractable {
                 return;
             }
 
+            // other player is in a powerup state..
+            if (other.IsDamageable && other.IsPowerUpQueueActive) {
+                DoKnockback(other.body.position.x > body.position.x, 1, true, 0);
+                other.DoKnockback(other.body.position.x < body.position.x, 1, true, 0);
+                return;
+            }
+
             other.Powerdown(false);
             body.velocity = previousFrameVelocity;
             return;
@@ -737,8 +748,47 @@ public class PlayerController : FreezableEntity, IPlayerInteractable {
 
     #region -- POWERUP / POWERDOWN --
 
+    public void AddToPowerUpQueue(PowerUpQueue queue) {
+        PowerUpQueueList.Add(queue);
+
+        if (!IsPowerUpQueueActive) {
+            IsPowerUpQueueActive = true;
+            StartCoroutine(nameof(PowerQueueHandle));
+        }
+    }
+
+    public void CancelPowerUpQueue(Enums.PowerupState state) {
+        IsPowerUpQueueActive = false;
+    }
+
+    System.Collections.IEnumerator PowerQueueHandle() {
+        while (PowerUpQueueList.Count > 0) {
+            Enums.PowerupState last = PowerUpQueueList[0].getPrevState();
+            Enums.PowerupState next = PowerUpQueueList[0].getCurrentState();
+            Enums.PowerupState[] states = { last, next };
+
+            PlaySound(PowerUpQueueList[0].getSound());
+
+            for (int i = 0; i < 8; ++i) {
+                // in case we need to cancel the queue immediately (mega mushroom)
+                if (!IsPowerUpQueueActive) {
+                    PowerUpQueueList.Clear();
+                    StopCoroutine(nameof(PowerQueueHandle));
+                    yield return null;
+                }
+                DisplayState = states[i & 1];
+                yield return new WaitForSeconds(.1f);
+            }
+
+            PowerUpQueueList.RemoveAt(0);
+        }
+        IsPowerUpQueueActive = false;
+        StopCoroutine(nameof(PowerQueueHandle));
+        yield return null;
+    }
+
     public void Powerdown(bool ignoreInvincible) {
-        if (ignoreInvincible || !IsDamageable)
+        if (ignoreInvincible || !IsDamageable || IsPowerUpQueueActive)
             return;
 
         PreviousState = State;
@@ -774,7 +824,8 @@ public class PlayerController : FreezableEntity, IPlayerInteractable {
 
         if (!nowDead) {
             DamageInvincibilityTimer = TickTimer.CreateFromSeconds(Runner, 3f);
-            PlaySound(Enums.Sounds.Player_Sound_Powerdown);
+            //PlaySound(Enums.Sounds.Player_Sound_Powerdown);
+            AddToPowerUpQueue(new PowerUpQueue(PreviousState, State, Enums.Sounds.Player_Sound_Powerdown));
         }
     }
     #endregion
@@ -1013,7 +1064,7 @@ public class PlayerController : FreezableEntity, IPlayerInteractable {
         IsRespawning = true;
         FacingRight = true;
         transform.localScale = Vector2.one;
-        PreviousState = State = Enums.PowerupState.NoPowerup;
+        PreviousState = State = DisplayState = Enums.PowerupState.NoPowerup;
         animationController.DisableAllModels();
         animator.SetTrigger("respawn");
         StarmanTimer = TickTimer.None;
@@ -1036,6 +1087,7 @@ public class PlayerController : FreezableEntity, IPlayerInteractable {
         IsRespawning = false;
         State = Enums.PowerupState.NoPowerup;
         PreviousState = Enums.PowerupState.NoPowerup;
+        DisplayState = Enums.PowerupState.NoPowerup;
         body.velocity = Vector2.zero;
         WallSlideLeft = false;
         WallSlideRight = false;
@@ -1992,7 +2044,7 @@ public class PlayerController : FreezableEntity, IPlayerInteractable {
         } else {
             //hit a ceiling, cancel
             giantSavedVelocity = Vector2.zero;
-            State = Enums.PowerupState.Mushroom;
+            State = DisplayState = Enums.PowerupState.Mushroom;
             GiantEndTimer = TickTimer.CreateFromSeconds(Runner, giantStartTime - GiantStartTimer.RemainingTime(Runner) ?? 0f);
             animator.enabled = true;
             animator.Play("mega-cancel", 0, 1f - (GiantEndTimer.RemainingTime(Runner) ?? 0f / giantStartTime));
@@ -2033,7 +2085,7 @@ public class PlayerController : FreezableEntity, IPlayerInteractable {
         if (State != Enums.PowerupState.MegaMushroom)
             return;
 
-        State = Enums.PowerupState.Mushroom;
+        State = DisplayState = Enums.PowerupState.Mushroom;
         GiantEndTimer = TickTimer.CreateFromSeconds(Runner, giantStartTime / 2f);
         stationaryGiantEnd = false;
         DamageInvincibilityTimer = TickTimer.CreateFromSeconds(Runner, 3f);

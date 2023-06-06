@@ -198,7 +198,9 @@ public class MovingPowerup : CollectableEntity, IBlockBumpable {
         switch (reserve) {
         case PowerupReserveResult.NoneButPlaySound: {
             //just play the collect sound
-            player.PlaySound(newPowerup.soundEffect);
+            //player.PlaySound(newPowerup.soundEffect);
+            if (newState == Enums.PowerupState.MegaMushroom) player.CancelPowerUpQueue(newState);
+            else player.AddToPowerUpQueue(new PowerUpQueue(oldState, newPowerup.state, newPowerup.soundEffect));
             break;
         }
         case PowerupReserveResult.ReserveOldPowerup: {
@@ -207,7 +209,9 @@ public class MovingPowerup : CollectableEntity, IBlockBumpable {
             if (newState == Enums.PowerupState.MegaMushroom)
                 break;
 
-            player.PlaySound(newPowerup.soundEffect);
+            //player.PlaySound(newPowerup.soundEffect);
+            if (newState == Enums.PowerupState.MegaMushroom) player.CancelPowerUpQueue(newState);
+            else player.AddToPowerUpQueue(new PowerUpQueue(oldState, newPowerup.state, newPowerup.soundEffect));
             break;
         }
         case PowerupReserveResult.ReserveNewPowerup: {

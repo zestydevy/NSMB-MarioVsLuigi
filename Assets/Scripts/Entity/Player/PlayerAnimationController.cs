@@ -247,7 +247,7 @@ public class PlayerAnimationController : NetworkBehaviour {
         animator.SetBool("head carry",     controller.HeldEntity != null && controller.HeldEntity is FrozenCube);
         animator.SetBool("pipe",           controller.CurrentPipe != null);
         animator.SetBool("blueshell",      controller.State == Enums.PowerupState.BlueShell);
-        animator.SetBool("mini",           controller.State == Enums.PowerupState.MiniMushroom);
+        animator.SetBool("mini",           controller.DisplayState == Enums.PowerupState.MiniMushroom);
         animator.SetBool("mega",           controller.State == Enums.PowerupState.MegaMushroom);
         animator.SetBool("inShell",        controller.IsInShell || (controller.State == Enums.PowerupState.BlueShell && (controller.IsCrouching || controller.IsGroundpounding) && (controller.GroundpoundStartTimer.RemainingTime(Runner) ?? 0f) <= 0.15f));
         animator.SetBool("turnaround",     controller.IsTurnaround);
@@ -271,7 +271,7 @@ public class PlayerAnimationController : NetworkBehaviour {
         if (controller.GiantEndTimer.IsActive(Runner)) {
             transform.localScale = Vector3.one + (Vector3.one * (Mathf.Min(1, (controller.GiantEndTimer.RemainingTime(Runner) ?? 0f) / (controller.giantStartTime / 2f)) * 2.6f));
         } else {
-            transform.localScale = controller.State switch {
+            transform.localScale = controller.DisplayState switch {
                 Enums.PowerupState.MiniMushroom => Vector3.one / 2,
                 Enums.PowerupState.MegaMushroom => Vector3.one + (Vector3.one * (Mathf.Min(1, 1 - ((controller.GiantStartTimer.RemainingTime(Runner) ?? 0f) / controller.giantStartTime)) * 2.6f)),
                 _ => Vector3.one,
@@ -291,7 +291,7 @@ public class PlayerAnimationController : NetworkBehaviour {
         }
 
         materialBlock.SetFloat("RainbowEnabled", controller.IsStarmanInvincible ? 1.1f : 0f);
-        int ps = controller.State switch {
+        int ps = controller.DisplayState switch {
             Enums.PowerupState.FireFlower => 1,
             Enums.PowerupState.PropellerMushroom => 2,
             Enums.PowerupState.IceFlower => 3,
@@ -317,14 +317,14 @@ public class PlayerAnimationController : NetworkBehaviour {
         models.SetActive(!controller.IsRespawning && (GameManager.Instance.gameover || controller.IsDead || !(remainingDamageInvincibility > 0 && remainingDamageInvincibility * (remainingDamageInvincibility <= 0.75f ? 5 : 2) % 0.2f < 0.1f)));
 
         //Model changing
-        bool large = controller.State >= Enums.PowerupState.Mushroom;
+        bool large = controller.DisplayState >= Enums.PowerupState.Mushroom;
 
         largeModel.SetActive(large);
         smallModel.SetActive(!large);
-        blueShell.SetActive(controller.State == Enums.PowerupState.BlueShell);
+        blueShell.SetActive(controller.DisplayState == Enums.PowerupState.BlueShell);
 
         largeShellExclude.SetActive(!animator.GetCurrentAnimatorStateInfo(0).IsName("in-shell"));
-        propellerHelmet.SetActive(controller.State == Enums.PowerupState.PropellerMushroom);
+        propellerHelmet.SetActive(controller.DisplayState == Enums.PowerupState.PropellerMushroom);
         animator.avatar = large ? largeAvatar : smallAvatar;
         animator.runtimeAnimatorController = large ? controller.character.largeOverrides : controller.character.smallOverrides;
 

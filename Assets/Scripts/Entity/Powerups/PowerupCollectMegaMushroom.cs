@@ -12,12 +12,15 @@ public class PowerupCollectMegaMushroom : MonoBehaviour, IPowerupCollect {
 
         player.PreviousState = player.State;
         player.State = Enums.PowerupState.MegaMushroom;
+        player.DisplayState = Enums.PowerupState.MegaMushroom;
         player.powerupFlash = 2;
         player.IsCrouching |= player.ForceCrouchCheck();
         player.IsPropellerFlying = false;
         player.UsedPropellerThisJump = false;
         player.IsDrilling &= player.IsSpinnerFlying;
         player.PropellerLaunchTimer = TickTimer.None;
+
+        player.CancelPowerUpQueue(Enums.PowerupState.MegaMushroom);
 
         player.GiantStartTimer = TickTimer.CreateFromSeconds(runner, player.giantStartTime);
         player.GiantTimer = TickTimer.CreateFromSeconds(runner, 15f + player.giantStartTime);
